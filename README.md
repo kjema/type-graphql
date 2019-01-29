@@ -1,0 +1,2 @@
+# TypeGraphQL
+GraphQL server
