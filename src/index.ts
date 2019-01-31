@@ -7,16 +7,13 @@ import session from 'express-session'
 import connectRedis from 'connect-redis'
 import cors from 'cors'
 
-import { RegisterResolver } from './modules/user/Register'
 import { redis } from './redis'
-import { LoginResolver } from './modules/user/Login'
-import { MeResolver } from './modules/user/Me'
 
 const main = async () => {
   await createConnection()
 
   const schema = await buildSchema({
-    resolvers: [MeResolver, RegisterResolver, LoginResolver],
+    resolvers: [__dirname + '/modules/**/*.ts'],
     authChecker: ({ context: { req } }) => {
       return !!req.session.userId
     },
@@ -25,7 +22,7 @@ const main = async () => {
   const apolloServer = new ApolloServer({
     schema,
     formatError: formatArgumentValidationError,
-    context: ({ req }: any) => ({ req }),
+    context: ({ req, res }: any) => ({ req, res }),
   })
 
   const app = Express()
@@ -51,7 +48,8 @@ const main = async () => {
       cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 1000 * 60 * 60 * 24 * 7 * 365, // 7 years
+        maxAge: 1000 * 60 * 60 * 24 * 7 * 365, // 7 years,
+        sameSite: true,
       },
     }),
   )
