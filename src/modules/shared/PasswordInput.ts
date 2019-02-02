@@ -1,4 +1,4 @@
-import { Length, MinLength } from 'class-validator'
+import { MinLength } from 'class-validator'
 import { Field, InputType } from 'type-graphql'
 
 @InputType()
