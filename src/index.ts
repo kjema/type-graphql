@@ -1,51 +1,51 @@
-import 'reflect-metadata'
-import { ApolloServer } from 'apollo-server-express'
-import Express from 'express'
-import { buildSchema, formatArgumentValidationError } from 'type-graphql'
-import { createConnection } from 'typeorm'
-import session from 'express-session'
-import connectRedis from 'connect-redis'
-import cors from 'cors'
+import 'reflect-metadata';
+import { ApolloServer } from 'apollo-server-express';
+import Express from 'express';
+import { buildSchema, formatArgumentValidationError } from 'type-graphql';
+import { createConnection } from 'typeorm';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import cors from 'cors';
 
-import { redis } from './redis'
-import { LoginResolver } from './modules/user/Login'
-import { MeResolver } from './modules/user/Me'
-import { LogoutResolver } from './modules/user/Logout'
-import { RegisterResolver } from './modules/user/Register'
+import { redis } from './redis';
+import { LoginResolver } from './modules/user/Login';
+import { MeResolver } from './modules/user/Me';
+import { LogoutResolver } from './modules/user/Logout';
+import { RegisterResolver } from './modules/user/Register';
 
 const main = async () => {
-  await createConnection()
+  await createConnection();
 
   const resolvers = [
     RegisterResolver,
     LoginResolver,
     MeResolver,
     LogoutResolver,
-  ]
+  ];
 
   const schema = await buildSchema({
     resolvers: resolvers,
     authChecker: ({ context: { req } }) => {
-      return !!req.session.userId
+      return !!req.session.userId;
     },
-  })
+  });
 
   const apolloServer = new ApolloServer({
     schema,
     formatError: formatArgumentValidationError,
     context: ({ req, res }: any) => ({ req, res }),
-  })
+  });
 
-  const app = Express()
+  const app = Express();
 
-  const RedisStore = connectRedis(session)
+  const RedisStore = connectRedis(session);
 
   app.use(
     cors({
       credentials: true,
       origin: 'http://localhost:3000',
     }),
-  )
+  );
 
   app.use(
     session({
@@ -63,13 +63,13 @@ const main = async () => {
         sameSite: true,
       },
     }),
-  )
+  );
 
-  apolloServer.applyMiddleware({ app })
+  apolloServer.applyMiddleware({ app, cors: false });
 
   app.listen(4000, () => {
-    console.log('server started on http://localhost:4000/graphql')
-  })
-}
+    console.log('server started on http://localhost:4000/graphql');
+  });
+};
 
-main()
+main();
